@@ -9,43 +9,73 @@
 </head>
 <body>
 
-  <!-- ─── LOGIN SCREEN ─── -->
+<!-- ─── LOGIN ─── -->
 <div id="view-login" class="view active">
   <div class="auth-card">
+
+    <!-- Logo -->
     <img src="Logo-02.png" alt="RX Finance" class="logo-img" />
     <p class="hero-tagline">Fast. Trusted. Namibian.</p>
-    <h2>Client Portal</h2>
-    <p class="subtitle">Sign in or create your account</p>
 
     <!-- Tab switcher -->
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
       <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Register</button>
+      <button class="auth-tab" id="tab-forgot" onclick="switchTab('forgot')">Forgot?</button>
     </div>
 
     <!-- Sign In -->
     <div id="form-signin">
+      <label>Email Address</label>
       <input type="email" id="signin-email" placeholder="your@email.com" />
-      <input type="password" id="signin-password" placeholder="Password" />
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="signin-password" placeholder="Your password" />
+        <button class="show-pass" onclick="togglePass('signin-password')">👁</button>
+      </div>
       <button onclick="signIn()" class="btn-primary">Sign In</button>
     </div>
 
     <!-- Register -->
     <div id="form-signup" class="hidden">
+      <label>Full Name</label>
+      <input type="text" id="signup-name" placeholder="e.g. John Nghifindaka" />
+      <label>Email Address</label>
       <input type="email" id="signup-email" placeholder="your@email.com" />
-      <input type="password" id="signup-password" placeholder="Create password (min 6 chars)" />
-      <input type="text" id="signup-name" placeholder="Full name" />
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="signup-password" placeholder="Min 6 characters" />
+        <button class="show-pass" onclick="togglePass('signup-password')">👁</button>
+      </div>
+      <label>Phone Number</label>
+      <input type="text" id="signup-phone" placeholder="+264 81 000 0000" />
       <button onclick="signUp()" class="btn-primary">Create Account</button>
+      <p class="form-note">By registering you agree to our lending terms and conditions.</p>
     </div>
 
+    <!-- Forgot Password -->
+    <div id="form-forgot" class="hidden">
+      <p class="subtitle">Enter your email and we will send you a reset link.</p>
+      <label>Email Address</label>
+      <input type="email" id="forgot-email" placeholder="your@email.com" />
+      <button onclick="sendReset()" class="btn-primary">Send Reset Link</button>
+      <button onclick="switchTab('signin')" class="btn-ghost">← Back to Sign In</button>
+    </div>
+
+    <!-- Messages -->
     <div id="auth-error" class="error-msg hidden"></div>
     <div id="auth-success" class="success-msg hidden"></div>
 
+    <!-- Trust badges -->
     <div class="trust-badges">
       <span class="trust-badge">🔒 256-bit Encrypted</span>
       <span class="trust-badge">✅ Registered Lender</span>
       <span class="trust-badge">⚡ 24hr Approval</span>
     </div>
+
+    <!-- Footer -->
+    <p class="auth-footer">RX Finance © 2025 · Licensed Micro Lender · Windhoek, Namibia</p>
+
   </div>
 </div>
 

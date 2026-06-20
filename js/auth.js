@@ -1,8 +1,7 @@
 // js/auth.js
-
 window.addEventListener('DOMContentLoaded', () => {
 
-  // Listen for auth state changes
+  // ─── AUTH STATE ───
   _supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth event:', event);
     if (event === 'SIGNED_IN' && session) {
@@ -14,9 +13,14 @@ window.addEventListener('DOMContentLoaded', () => {
       AppState.setState({ user: null, session: null });
       showView('login');
     }
+    if (event === 'PASSWORD_RECOVERY') {
+      showView('login');
+      switchTab('signin');
+      showAuthSuccess('Enter your new password below.');
+    }
   });
 
-  // Check existing session on load
+  // ─── CHECK SESSION ───
   async function checkSession() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
@@ -33,7 +37,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const email = document.getElementById('signin-email').value.trim();
     const password = document.getElementById('signin-password').value;
 
-    if (!email || !password) return showAuthError('Please enter email and password');
+    if (!email) return showAuthError('Please enter your email address');
+    if (!password) return showAuthError('Please enter your password');
 
     const btn = document.querySelector('#form-signin .btn-primary');
     btn.textContent = 'Signing in...';
@@ -41,10 +46,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
-    console.log('SignIn:', { user: data?.user?.id, error: error?.message });
-
     if (error) {
-      showAuthError(error.message);
+      if (error.message.includes('Invalid login')) {
+        showAuthError('Incorrect email or password. Please try again.');
+      } else {
+        showAuthError(error.message);
+      }
       btn.textContent = 'Sign In';
       btn.disabled = false;
     }
@@ -52,13 +59,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ─── SIGN UP ───
   window.signUp = async function() {
+    const full_name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
-    const full_name = document.getElementById('signup-name').value.trim();
+    const phone = document.getElementById('signup-phone').value.trim();
 
-    if (!email || !password) return showAuthError('Please enter email and password');
-    if (password.length < 6) return showAuthError('Password must be at least 6 characters');
     if (!full_name) return showAuthError('Please enter your full name');
+    if (!email) return showAuthError('Please enter your email address');
+    if (!password || password.length < 6) return showAuthError('Password must be at least 6 characters');
 
     const btn = document.querySelector('#form-signup .btn-primary');
     btn.textContent = 'Creating account...';
@@ -67,18 +75,52 @@ window.addEventListener('DOMContentLoaded', () => {
     const { data, error } = await _supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name } }
+      options: {
+        data: { full_name, phone }
+      }
     });
-
-    console.log('SignUp:', { user: data?.user?.id, error: error?.message });
 
     if (error) {
       showAuthError(error.message);
       btn.textContent = 'Create Account';
       btn.disabled = false;
-    } else {
-      showAuthSuccess('Account created! Signing you in...');
+      return;
     }
+
+    if (data.user && !data.session) {
+      // Email confirmation required
+      showAuthSuccess('✅ Account created! Check your email to confirm your account, then sign in.');
+      switchTab('signin');
+      btn.textContent = 'Create Account';
+      btn.disabled = false;
+      return;
+    }
+
+    // Auto signed in (email confirmation off)
+    showAuthSuccess('✅ Account created! Welcome to RX Finance.');
+  }
+
+  // ─── FORGOT PASSWORD ───
+  window.sendReset = async function() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) return showAuthError('Please enter your email address');
+
+    const btn = document.querySelector('#form-forgot .btn-primary');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href
+    });
+
+    if (error) {
+      showAuthError(error.message);
+    } else {
+      showAuthSuccess('✅ Reset link sent! Check your email inbox.');
+    }
+
+    btn.textContent = 'Send Reset Link';
+    btn.disabled = false;
   }
 
   // ─── SIGN OUT ───
@@ -88,32 +130,40 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ─── TAB SWITCHER ───
   window.switchTab = function(tab) {
-    document.getElementById('form-signin').classList.toggle('hidden', tab !== 'signin');
-    document.getElementById('form-signup').classList.toggle('hidden', tab !== 'signup');
-    document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
-    document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
-    hideAuthError();
+    ['signin', 'signup', 'forgot'].forEach(t => {
+      document.getElementById('form-' + t).classList.toggle('hidden', t !== tab);
+      document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
+    });
+    hideAuthMessages();
   }
 
-  // ─── HELPERS ───
+  // ─── SHOW/HIDE PASSWORD ───
+  window.togglePass = function(inputId) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  // ─── MESSAGES ───
   function showAuthError(msg) {
-    const el = document.getElementById('auth-error');
-    el.textContent = msg;
-    el.classList.remove('hidden');
+    document.getElementById('auth-error').textContent = msg;
+    document.getElementById('auth-error').classList.remove('hidden');
     document.getElementById('auth-success').classList.add('hidden');
   }
 
   function showAuthSuccess(msg) {
-    const el = document.getElementById('auth-success');
-    el.textContent = msg;
-    el.classList.remove('hidden');
+    document.getElementById('auth-success').textContent = msg;
+    document.getElementById('auth-success').classList.remove('hidden');
     document.getElementById('auth-error').classList.add('hidden');
   }
 
-  function hideAuthError() {
+  function hideAuthMessages() {
     document.getElementById('auth-error').classList.add('hidden');
     document.getElementById('auth-success').classList.add('hidden');
   }
+
+  // expose for external use
+  window.showAuthError = showAuthError;
+  window.showAuthSuccess = showAuthSuccess;
 
   // ─── START ───
   checkSession();
