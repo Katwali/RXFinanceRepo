@@ -17,6 +17,8 @@ RXFinanceRepo/
 
 ├── admin.html           # Admin portal (pipeline, approve/reject)
 
+├── Logo-02.png          # RX Finance logo (used in topbars + login screens)
+
 ├── vercel.json          # Vercel deployment + iframe headers
 
 ├── js/
@@ -36,6 +38,18 @@ RXFinanceRepo/
 ├── client.css       # Client portal styles
 
 └── admin.css        # Admin portal styles
+
+## Brand / Design System
+- Logo: `Logo-02.png`, rendered via `.logo-img` (max-height 48px) / `.logo-img-sm` (topbars)
+- Color palette (CSS variables defined at the top of both `client.css` and `admin.css`):
+  - `--navy: #1B3A6B` — primary brand color (buttons, headings, active states)
+  - `--navy-light: #2C5490` — gradient/hover accent for navy
+  - `--gold: #C9A84C` / `--gold-light: #E8D9A8` — pending/review status, premium accents
+  - `--green: #2E7D52` / `--green-light: #DCEEE1` — approved/active/success states
+  - `--red: #C0392B` / `--red-light: #F8D7D2` — errors, rejected, overdue only
+  - `--gray-bg: #F5F6FA` — page/section backgrounds
+  - `--gray-dark: #2C2C2C` — body text
+- Status badge color mapping: pending=gold, approved=green, active=navy, rejected/overdue=red, completed=gray, review=light gold, disbursed=light navy
 
 ## Supabase Config
 - Project URL: https://xxdaqxefkofmvgrgcewo.supabase.co
