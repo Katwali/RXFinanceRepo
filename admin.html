@@ -122,6 +122,16 @@
           <div class="detail-row"><span>Purpose</span><span id="d-purpose">—</span></div>
           <div class="detail-row"><span>Applied</span><span id="d-date">—</span></div>
           <div class="detail-row"><span>Status</span><span id="d-status">—</span></div>
+          <div class="detail-row">
+        <span>Loan ID</span>
+        <span id="d-loanref" style="color:var(--gold);font-weight:800">—</span>
+        </div>
+        <div class="detail-row">
+        <span>Frequency</span><span id="d-frequency">—</span>
+     </div>
+    <div class="detail-row">
+        <span>Grace Period</span><span id="d-grace">—</span>
+    </div>
         </div>
       </div>
 
@@ -140,6 +150,29 @@
       <!-- Actions -->
       <div class="detail-card">
         <div class="detail-card-title">Actions</div>
+        <div class="detail-card">
+  <div class="detail-card-title">Loan Pricing (Admin)</div>
+  <div class="pricing-grid">
+    <div class="pricing-item">
+      <label>Interest Rate (%)</label>
+      <div class="rate-control">
+        <input type="range" id="admin-interest-rate" 
+          min="15" max="30" value="30" step="1"
+          oninput="document.getElementById('interest-display').textContent = this.value + '%'" />
+        <span class="rate-display" id="interest-display">30%</span>
+      </div>
+    </div>
+    <div class="pricing-item">
+      <label>Late Fee Rate (%/day)</label>
+      <div class="rate-control">
+        <input type="range" id="admin-late-fee"
+          min="1" max="5" value="2" step="1"
+          oninput="document.getElementById('late-display').textContent = this.value + '%'" />
+        <span class="rate-display" id="late-display">2%</span>
+      </div>
+    </div>
+  </div>
+</div>
         <div class="action-buttons" id="action-buttons">
           <!-- Filled dynamically based on status -->
         </div>
@@ -155,7 +188,6 @@
         <div class="detail-card-title">Repayment Schedule</div>
         <div id="d-repayments"></div>
       </div>
-
     </div>
   </div>
 

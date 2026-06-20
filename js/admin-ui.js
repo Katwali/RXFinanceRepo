@@ -204,6 +204,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('d-purpose').textContent = currentApp.purpose || '—';
     document.getElementById('d-date').textContent = new Date(currentApp.created_at).toLocaleDateString('en-NA');
     document.getElementById('d-status').innerHTML = `<span class="badge badge-${currentApp.status}">${currentApp.status}</span>`;
+    document.getElementById('d-loanref').textContent = currentApp.loan_ref || '#' + currentApp.id;
+    document.getElementById('d-frequency').textContent = currentApp.repayment_frequency || 'monthly';
+    document.getElementById('d-grace').textContent = (currentApp.grace_period_days || 3) + ' days';
     document.getElementById('admin-notes').value = currentApp.admin_notes || '';
 
     // Documents
@@ -302,50 +305,60 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ─── APPROVE + GENERATE SCHEDULE ───
   window.approveApplication = async function() {
-    const notes = document.getElementById('admin-notes').value;
+  const notes = document.getElementById('admin-notes').value;
+  const interestRate = parseFloat(document.getElementById('admin-interest-rate').value) / 100 || 0.30;
+  const lateFeeRate = parseFloat(document.getElementById('admin-late-fee').value) / 100 || 0.02;
 
-    // Update status
-    const { error } = await _supabase
-      .from('applications')
-      .update({ status: 'approved', admin_notes: notes })
-      .eq('id', currentApp.id);
+  const amount = Number(currentApp.amount);
+  const interest = amount * interestRate;
+  const total = amount + interest;
+  const freq = currentApp.repayment_frequency || 'monthly';
+  const numInstallments = freq === 'weekly' ? currentApp.term_months * 4 : currentApp.term_months;
+  const installment = total / numInstallments;
 
-    if (error) return showActionMsg('Error: ' + error.message, false);
+  // Update application with final pricing
+  const { error } = await _supabase
+    .from('applications')
+    .update({
+      status: 'approved',
+      admin_notes: notes,
+      interest_rate: interestRate * 100,
+      late_fee_rate: lateFeeRate * 100,
+      total_repayable: total
+    })
+    .eq('id', currentApp.id);
 
-    // Generate repayment schedule
-    const total = Number(currentApp.total_repayable);
-    const installment = total / currentApp.term_months;
-    const repayments = [];
-    const startDate = new Date();
+  if (error) return showActionMsg('Error: ' + error.message, false);
 
-    for (let i = 1; i <= currentApp.term_months; i++) {
-      const dueDate = new Date(startDate);
+  // Generate repayment schedule
+  const repayments = [];
+  const startDate = new Date();
+
+  for (let i = 1; i <= numInstallments; i++) {
+    const dueDate = new Date(startDate);
+    if (freq === 'weekly') {
+      dueDate.setDate(dueDate.getDate() + (i * 7));
+    } else {
       dueDate.setMonth(dueDate.getMonth() + i);
-      repayments.push({
-        application_id: currentApp.id,
-        due_date: dueDate.toISOString().split('T')[0],
-        amount: parseFloat(installment.toFixed(2)),
-        status: 'pending'
-      });
     }
-
-    const { error: repError } = await _supabase
-      .from('repayments')
-      .insert(repayments);
-
-    if (repError) return showActionMsg('Approved but schedule error: ' + repError.message, false);
-
-    showActionMsg('✅ Approved and repayment schedule generated!', true);
-    await loadApplications();
-    currentApp = allApplications.find(a => a.id === currentApp.id);
-    currentApp.status = 'approved';
-    renderActionButtons();
-
-    // Show repayment table
-    document.getElementById('repayment-card').style.display = 'block';
-    openDetail(currentApp.id);
+    repayments.push({
+      application_id: currentApp.id,
+      due_date: dueDate.toISOString().split('T')[0],
+      amount: parseFloat(installment.toFixed(2)),
+      status: 'pending'
+    });
   }
 
+  const { error: repError } = await _supabase
+    .from('repayments')
+    .insert(repayments);
+
+  if (repError) return showActionMsg('Approved but schedule error: ' + repError.message, false);
+
+  showActionMsg('✅ Approved! ' + numInstallments + ' ' + freq + ' installments of N$' + installment.toFixed(2), true);
+  await loadApplications();
+  openDetail(currentApp.id);
+}
   // ─── DISBURSE ───
   window.showDisburse = function() {
     document.getElementById('disburse-section').classList.remove('hidden');

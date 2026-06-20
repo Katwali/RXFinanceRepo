@@ -51,7 +51,11 @@ function renderDashboard() {
     document.getElementById('no-loan-card').classList.add('hidden');
     document.getElementById('active-loan-card').classList.remove('hidden');
     document.getElementById('active-amount').textContent = 'N$' + Number(active.amount).toLocaleString();
-
+    document.getElementById('active-amount').textContent = 'N$' + Number(active.amount).toLocaleString();
+    
+    // Add loan ref below amount
+    const loanRefEl = document.getElementById('active-loan-ref');
+    if (loanRefEl) loanRefEl.textContent = 'Loan ID: ' + (active.loan_ref || '#' + active.id);
     const reps = active.repayments || [];
     const paid = reps.filter(r => r.status === 'paid').length;
     const total = reps.length;
@@ -74,9 +78,16 @@ let sigCanvas, sigCtx, isDrawing = false;
 
 function initWizard() {
   AppState.currentApp = {
-    amount: 0, term: 6, purpose: '',
-    totalRepayable: 0, installment: 0,
-    applicationId: null, uploadedDocs: {}
+    amount: 0,
+    term: 6,
+    purpose: '',
+    frequency: 'monthly',
+    gracePeriod: 3,
+    totalRepayable: 0,
+    installment: 0,
+    numInstallments: 6,
+    applicationId: null,
+    uploadedDocs: {}
   };
   goToStep(1);
   initSignature();
@@ -101,16 +112,20 @@ async function goToStep(n) {
     // Save to Supabase first
     const { data: app, error } = await _supabase
       .from('applications')
-      .insert({
-        user_id: AppState.user.id,
-        amount,
-        term_months: term,
-        total_repayable: total,
-        purpose,
-        status: 'pending'
-      })
-      .select()
-      .single();
+      const { data: app, error } = await _supabase
+  .from('applications')
+  .insert({
+    user_id: AppState.user.id,
+    amount,
+    term_months: term,
+    total_repayable: total,
+    purpose,
+    status: 'pending',
+    repayment_frequency: AppState.currentApp.frequency || 'monthly',
+    grace_period_days: AppState.currentApp.gracePeriod || 3
+  })
+  .select()
+  .single();
 
     if (error) {
       alert('Error saving application: ' + error.message);
@@ -145,6 +160,19 @@ function setClientType(type) {
   document.getElementById('type-sme').classList.toggle('active', type === 'sme');
 }
 
+function setFrequency(freq) {
+  AppState.currentApp.frequency = freq;
+  document.getElementById('freq-monthly').classList.toggle('active', freq === 'monthly');
+  document.getElementById('freq-weekly').classList.toggle('active', freq === 'weekly');
+  updateCalc();
+}
+
+function setGrace(days) {
+  AppState.currentApp.gracePeriod = days;
+  document.getElementById('grace-3').classList.toggle('active', days === 3);
+  document.getElementById('grace-5').classList.toggle('active', days === 5);
+}
+
 // Live calculator
 document.addEventListener('DOMContentLoaded', () => {
   ['loan-amount', 'loan-term'].forEach(id => {
@@ -156,19 +184,33 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateCalc() {
   const amount = parseFloat(document.getElementById('loan-amount').value) || 0;
   const term = parseInt(document.getElementById('loan-term').value) || 1;
-  const interest = amount * 0.30;
+  const freq = document.getElementById('loan-frequency').value || 'monthly';
+  const interestRate = 0.30;
+
+  const interest = amount * interestRate;
   const total = amount + interest;
-  const installment = total / term;
+
+  let installment, numInstallments;
+  if (freq === 'weekly') {
+    numInstallments = term * 4;
+    installment = total / numInstallments;
+  } else {
+    numInstallments = term;
+    installment = total / numInstallments;
+  }
 
   document.getElementById('c-principal').textContent = 'N$' + amount.toLocaleString();
   document.getElementById('c-interest').textContent = 'N$' + interest.toFixed(2);
   document.getElementById('c-total').textContent = 'N$' + total.toFixed(2);
-  document.getElementById('c-installment').textContent = 'N$' + installment.toFixed(2);
+  document.getElementById('c-installment').textContent = 'N$' + installment.toFixed(2) + 
+    ' × ' + numInstallments + ' ' + (freq === 'weekly' ? 'weeks' : 'months');
 
   AppState.currentApp.amount = amount;
   AppState.currentApp.term = term;
+  AppState.currentApp.frequency = freq;
   AppState.currentApp.totalRepayable = total;
   AppState.currentApp.installment = installment;
+  AppState.currentApp.numInstallments = numInstallments;
 }
 
 // ─── DOCUMENT LIST ───
@@ -358,18 +400,25 @@ function renderHistory() {
     return;
   }
 
-  container.innerHTML = loans.map(loan => `
-    <div class="loan-card">
-      <div class="loan-card-top">
-        <div class="loan-card-amount">N$${Number(loan.amount).toLocaleString()}</div>
-        <span class="status-badge badge-${loan.status}">${loan.status}</span>
-      </div>
-      <div style="font-size:13px;color:#6b7280">
-        ${loan.term_months} months · Applied ${new Date(loan.created_at).toLocaleDateString('en-NA')}
-      </div>
-      ${loan.admin_notes ? `<div style="margin-top:8px;font-size:13px;background:#f8fafc;padding:8px;border-radius:8px">${loan.admin_notes}</div>` : ''}
+ container.innerHTML = loans.map(loan => `
+  <div class="loan-card">
+    <div class="loan-ref-badge">Loan ID: ${loan.loan_ref || '#' + loan.id}</div>
+    <div class="loan-card-top">
+      <div class="loan-card-amount">N$${Number(loan.amount).toLocaleString()}</div>
+      <span class="status-badge badge-${loan.status}">${loan.status}</span>
     </div>
-  `).join('');
+    <div style="font-size:13px;color:var(--gray-mid)">
+      ${loan.term_months} months · 
+      ${loan.repayment_frequency || 'monthly'} · 
+      Applied ${new Date(loan.created_at).toLocaleDateString('en-NA')}
+    </div>
+    ${loan.admin_notes ? `
+      <div style="margin-top:8px;font-size:13px;background:var(--navy-pale);
+        padding:8px;border-radius:8px;color:var(--navy)">
+        ${loan.admin_notes}
+      </div>` : ''}
+  </div>
+`).join('');
 }
 
 // ─── REPAYMENTS ───

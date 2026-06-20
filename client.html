@@ -100,6 +100,8 @@
           <span id="paid-installments">0 paid</span>
           <span id="next-due">Next due: —</span>
         </div>
+        <div class="loan-amount" id="active-amount">N$0</div>
+        <div class="loan-ref-badge" id="active-loan-ref"></div>
       </div>
 
       <!-- No loan state -->
@@ -167,46 +169,72 @@
     <div class="container">
 
       <!-- Step 1: Loan Details -->
-      <div id="wizard-step-1" class="wizard-step">
-        <h3>Loan Details</h3>
-        <label>Client Type</label>
-        <div class="toggle-group">
-          <button class="toggle-btn active" id="type-individual" onclick="setClientType('individual')">Individual</button>
-          <button class="toggle-btn" id="type-sme" onclick="setClientType('sme')">SME / Business</button>
-        </div>
+      <!-- Step 1: Loan Details -->
+<div id="wizard-step-1" class="wizard-step">
+  <h3>Loan Details</h3>
 
-        <label>Loan Amount (N$)</label>
-        <input type="number" id="loan-amount" placeholder="e.g. 5000" min="500" max="50000" />
+  <label>Client Type</label>
+  <div class="toggle-group">
+    <button class="toggle-btn active" id="type-individual" 
+      onclick="setClientType('individual')">Individual</button>
+    <button class="toggle-btn" id="type-sme" 
+      onclick="setClientType('sme')">SME / Business</button>
+  </div>
 
-        <label>Repayment Term</label>
-        <select id="loan-term">
-          <option value="1">1 month</option>
-          <option value="3">3 months</option>
-          <option value="6" selected>6 months</option>
-          <option value="12">12 months</option>
-        </select>
+  <label>Loan Amount (N$)</label>
+  <input type="number" id="loan-amount" placeholder="e.g. 5000" 
+    min="500" max="50000" oninput="updateCalc()" />
 
-        <label>Purpose of Loan</label>
-        <input type="text" id="loan-purpose" placeholder="e.g. Business stock, medical, school fees" />
+  <label>Repayment Term</label>
+  <select id="loan-term" onchange="updateCalc()">
+    <option value="1">1 month</option>
+    <option value="3">3 months</option>
+    <option value="6" selected>6 months</option>
+    <option value="12">12 months</option>
+  </select>
 
-        <!-- Live calculation -->
-        <div class="calc-box" id="calc-box">
-          <div class="calc-row">
-            <span>Principal</span><span id="c-principal">N$0</span>
-          </div>
-          <div class="calc-row">
-            <span>Interest (30%)</span><span id="c-interest">N$0</span>
-          </div>
-          <div class="calc-row total">
-            <span>Total Repayable</span><span id="c-total">N$0</span>
-          </div>
-          <div class="calc-row">
-            <span>Monthly Installment</span><span id="c-installment">N$0</span>
-          </div>
-        </div>
+  <label>Repayment Frequency</label>
+  <div class="toggle-group">
+    <button class="toggle-btn active" id="freq-monthly" 
+      onclick="setFrequency('monthly')">Monthly</button>
+    <button class="toggle-btn" id="freq-weekly" 
+      onclick="setFrequency('weekly')">Weekly</button>
+  </div>
 
-        <button onclick="goToStep(2)" class="btn-primary">Next →</button>
-      </div>
+  <label>Grace Period (days before late fee)</label>
+  <div class="toggle-group">
+    <button class="toggle-btn active" id="grace-3" 
+      onclick="setGrace(3)">3 Days</button>
+    <button class="toggle-btn" id="grace-5" 
+      onclick="setGrace(5)">5 Days</button>
+  </div>
+
+  <label>Purpose of Loan</label>
+  <input type="text" id="loan-purpose" 
+    placeholder="e.g. Business stock, medical, school fees" />
+
+  <!-- Live calculation -->
+  <div class="calc-box" id="calc-box">
+    <div class="calc-row">
+      <span>Principal</span>
+      <span id="c-principal">N$0</span>
+    </div>
+    <div class="calc-row">
+      <span>Interest (30%)</span>
+      <span id="c-interest">N$0</span>
+    </div>
+    <div class="calc-row total">
+      <span>Total Repayable</span>
+      <span id="c-total">N$0</span>
+    </div>
+    <div class="calc-row">
+      <span>Installment Amount</span>
+      <span id="c-installment">N$0</span>
+    </div>
+  </div>
+
+  <button onclick="goToStep(2)" class="btn-primary">Next →</button>
+</div>
 
       <!-- Step 2: Documents -->
       <div id="wizard-step-2" class="wizard-step hidden">
