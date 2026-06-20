@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RX Finance — Client Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/client.css" />
+</head>
+<body>
+
+  <!-- ─── LOGIN SCREEN ─── -->
+<div id="view-login" class="view active">
+  <div class="auth-card">
+    <div class="logo">RX<span>Finance</span></div>
+    <h2>Client Portal</h2>
+    <p class="subtitle">Sign in or create your account</p>
+
+    <!-- Tab switcher -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Register</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="form-signin">
+      <input type="email" id="signin-email" placeholder="your@email.com" />
+      <input type="password" id="signin-password" placeholder="Password" />
+      <button onclick="signIn()" class="btn-primary">Sign In</button>
+    </div>
+
+    <!-- Register -->
+    <div id="form-signup" class="hidden">
+      <input type="email" id="signup-email" placeholder="your@email.com" />
+      <input type="password" id="signup-password" placeholder="Create password (min 6 chars)" />
+      <input type="text" id="signup-name" placeholder="Full name" />
+      <button onclick="signUp()" class="btn-primary">Create Account</button>
+    </div>
+
+    <div id="auth-error" class="error-msg hidden"></div>
+    <div id="auth-success" class="success-msg hidden"></div>
+  </div>
+</div>
+
+  <!-- ─── DASHBOARD ─── -->
+  <div id="view-dashboard" class="view hidden">
+    <div class="topbar">
+      <div class="logo-sm">RX<span>Finance</span></div>
+      <button onclick="signOut()" class="btn-ghost-sm">Sign Out</button>
+    </div>
+
+    <div class="container">
+      <h2 class="greeting" id="greeting">Welcome back</h2>
+
+      <!-- Active Loan Card -->
+      <div id="active-loan-card" class="card hidden">
+        <div class="card-label">Active Loan</div>
+        <div class="loan-amount" id="active-amount">N$0</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="loan-progress"></div>
+        </div>
+        <div class="loan-meta">
+          <span id="paid-installments">0 paid</span>
+          <span id="next-due">Next due: —</span>
+        </div>
+      </div>
+
+      <!-- No loan state -->
+      <div id="no-loan-card" class="card center hidden">
+        <div class="empty-icon">💳</div>
+        <p>You have no active loan</p>
+        <button onclick="showView('apply')" class="btn-primary">Apply Now</button>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-label">Total Applications</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-pending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-completed">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+      </div>
+
+      <!-- Nav buttons -->
+      <div class="nav-grid">
+        <button onclick="showView('apply')" class="nav-btn">
+          <span class="nav-icon">➕</span>
+          New Application
+        </button>
+        <button onclick="showView('history')" class="nav-btn">
+          <span class="nav-icon">📋</span>
+          My Loans
+        </button>
+        <button onclick="showView('repayments')" class="nav-btn">
+          <span class="nav-icon">📅</span>
+          Repayments
+        </button>
+        <button onclick="showView('profile')" class="nav-btn">
+          <span class="nav-icon">👤</span>
+          My Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── APPLICATION WIZARD ─── -->
+  <div id="view-apply" class="view hidden">
+    <div class="topbar">
+      <button onclick="showView('dashboard')" class="btn-ghost-sm">← Back</button>
+      <div class="logo-sm">New Application</div>
+      <div></div>
+    </div>
+
+    <!-- Step indicators -->
+    <div class="steps-bar">
+      <div class="step active" id="step-dot-1">1</div>
+      <div class="step-line"></div>
+      <div class="step" id="step-dot-2">2</div>
+      <div class="step-line"></div>
+      <div class="step" id="step-dot-3">3</div>
+    </div>
+
+    <div class="container">
+
+      <!-- Step 1: Loan Details -->
+      <div id="wizard-step-1" class="wizard-step">
+        <h3>Loan Details</h3>
+        <label>Client Type</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="type-individual" onclick="setClientType('individual')">Individual</button>
+          <button class="toggle-btn" id="type-sme" onclick="setClientType('sme')">SME / Business</button>
+        </div>
+
+        <label>Loan Amount (N$)</label>
+        <input type="number" id="loan-amount" placeholder="e.g. 5000" min="500" max="50000" />
+
+        <label>Repayment Term</label>
+        <select id="loan-term">
+          <option value="1">1 month</option>
+          <option value="3">3 months</option>
+          <option value="6" selected>6 months</option>
+          <option value="12">12 months</option>
+        </select>
+
+        <label>Purpose of Loan</label>
+        <input type="text" id="loan-purpose" placeholder="e.g. Business stock, medical, school fees" />
+
+        <!-- Live calculation -->
+        <div class="calc-box" id="calc-box">
+          <div class="calc-row">
+            <span>Principal</span><span id="c-principal">N$0</span>
+          </div>
+          <div class="calc-row">
+            <span>Interest (30%)</span><span id="c-interest">N$0</span>
+          </div>
+          <div class="calc-row total">
+            <span>Total Repayable</span><span id="c-total">N$0</span>
+          </div>
+          <div class="calc-row">
+            <span>Monthly Installment</span><span id="c-installment">N$0</span>
+          </div>
+        </div>
+
+        <button onclick="goToStep(2)" class="btn-primary">Next →</button>
+      </div>
+
+      <!-- Step 2: Documents -->
+      <div id="wizard-step-2" class="wizard-step hidden">
+        <h3>Upload Documents</h3>
+        <p class="subtitle">Upload clear photos or scans of your documents</p>
+
+        <div id="doc-list">
+          <!-- Filled dynamically based on client type -->
+        </div>
+
+        <button onclick="goToStep(1)" class="btn-ghost">← Back</button>
+        <button onclick="goToStep(3)" class="btn-primary">Next →</button>
+      </div>
+
+      <!-- Step 3: Review & Submit -->
+      <div id="wizard-step-3" class="wizard-step hidden">
+        <h3>Review & Submit</h3>
+
+        <div class="review-box" id="review-summary">
+          <!-- Filled dynamically -->
+        </div>
+
+        <div class="signature-section">
+          <label>Signature (draw below)</label>
+          <canvas id="sig-canvas" width="340" height="120"></canvas>
+          <button onclick="clearSig()" class="btn-ghost-sm">Clear</button>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="terms-check" />
+          <label for="terms-check">I agree to the loan terms and repayment schedule</label>
+        </div>
+
+        <button onclick="goToStep(2)" class="btn-ghost">← Back</button>
+        <button onclick="submitApplication()" class="btn-primary btn-submit">Submit Application</button>
+
+        <div id="submit-error" class="error-msg hidden"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── LOAN HISTORY ─── -->
+  <div id="view-history" class="view hidden">
+    <div class="topbar">
+      <button onclick="showView('dashboard')" class="btn-ghost-sm">← Back</button>
+      <div class="logo-sm">My Loans</div>
+      <div></div>
+    </div>
+    <div class="container">
+      <div id="history-list">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── REPAYMENTS ─── -->
+  <div id="view-repayments" class="view hidden">
+    <div class="topbar">
+      <button onclick="showView('dashboard')" class="btn-ghost-sm">← Back</button>
+      <div class="logo-sm">Repayments</div>
+      <div></div>
+    </div>
+    <div class="container">
+      <div id="repayments-list">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PROFILE ─── -->
+  <div id="view-profile" class="view hidden">
+    <div class="topbar">
+      <button onclick="showView('dashboard')" class="btn-ghost-sm">← Back</button>
+      <div class="logo-sm">My Profile</div>
+      <div></div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <label>Full Name</label>
+        <input type="text" id="profile-name" placeholder="Your full name" />
+        <label>Phone Number</label>
+        <input type="text" id="profile-phone" placeholder="+264 81 000 0000" />
+        <label>ID Number</label>
+        <input type="text" id="profile-id" placeholder="Namibian ID number" />
+        <button onclick="saveProfile()" class="btn-primary">Save Profile</button>
+        <div id="profile-msg" class="hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/client-ui.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

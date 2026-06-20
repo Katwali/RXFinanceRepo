@@ -1,0 +1,14 @@
+# Environment secrets
+.env
+.env.local
+.env.production
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node (if we add it later)
+node_modules/
