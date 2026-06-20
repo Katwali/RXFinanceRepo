@@ -1,10 +1,25 @@
+/* ─── BRAND VARIABLES ─── */
+:root {
+  --navy: #1B3A6B;
+  --navy-light: #2C5490;
+  --gold: #C9A84C;
+  --gold-light: #E8D9A8;
+  --white: #FFFFFF;
+  --green: #2E7D52;
+  --green-light: #DCEEE1;
+  --gray-bg: #F5F6FA;
+  --gray-dark: #2C2C2C;
+  --red: #C0392B;
+  --red-light: #F8D7D2;
+}
+
 /* ─── RESET & BASE ─── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f4f6f9;
-  color: #1a1a2e;
+  background: var(--gray-bg);
+  color: var(--gray-dark);
   min-height: 100vh;
   font-size: 15px;
 }
@@ -14,44 +29,79 @@ body {
 .view.active { display: block; }
 .hidden { display: none !important; }
 
-/* ─── AUTH CARD ─── */
-.auth-card {
-  max-width: 400px;
-  margin: 80px auto;
-  background: white;
-  border-radius: 16px;
-  padding: 40px 32px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  text-align: center;
-}
-
-.logo {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1a1a2e;
+/* ─── LOGO ─── */
+.logo-img {
+  max-height: 48px;
+  object-fit: contain;
+  display: inline-block;
   margin-bottom: 8px;
 }
 
+.logo-img-sm {
+  max-height: 28px;
+}
+
+/* ─── AUTH CARD ─── */
+.auth-card {
+  max-width: 400px;
+  margin: 60px auto;
+  background: var(--white);
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 8px 28px rgba(27,58,107,0.12);
+  text-align: center;
+}
+
+.hero-tagline {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.3px;
+  margin-bottom: 14px;
+}
+
 .logo span, .logo-sm span {
-  color: #4f46e5;
+  color: var(--gold);
 }
 
 .logo-sm {
   font-size: 16px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--gray-dark);
 }
 
 .auth-card h2 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 6px;
+  color: var(--gray-dark);
 }
 
 .subtitle {
   color: #6b7280;
   font-size: 13px;
   margin-bottom: 24px;
+}
+
+/* ─── TRUST BADGES ─── */
+.trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #eef0f5;
+}
+
+.trust-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--gray-bg);
+  border: 1px solid #e5e7eb;
+  border-radius: 99px;
+  padding: 6px 10px;
 }
 
 /* ─── INPUTS ─── */
@@ -72,7 +122,7 @@ select {
 }
 
 input:focus, select:focus {
-  border-color: #4f46e5;
+  border-color: var(--navy);
 }
 
 label {
@@ -89,7 +139,7 @@ label {
 .btn-primary {
   width: 100%;
   padding: 13px;
-  background: #4f46e5;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
   color: white;
   border: none;
   border-radius: 10px;
@@ -97,40 +147,47 @@ label {
   font-weight: 600;
   cursor: pointer;
   margin-top: 8px;
-  transition: background 0.2s;
+  transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 10px rgba(27,58,107,0.18);
 }
 
-.btn-primary:hover { background: #4338ca; }
+.btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
 .btn-ghost {
   width: 100%;
   padding: 11px;
   background: transparent;
-  color: #4f46e5;
-  border: 1.5px solid #4f46e5;
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   margin-top: 8px;
+  transition: background 0.2s;
 }
+
+.btn-ghost:hover { background: var(--gray-bg); }
 
 .btn-ghost-sm {
   padding: 7px 14px;
   background: transparent;
-  color: #4f46e5;
+  color: var(--navy);
   border: 1.5px solid #e5e7eb;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
 }
+
+.btn-ghost-sm:hover { border-color: var(--navy); background: var(--gray-bg); }
 
 /* ─── MESSAGES ─── */
 .success-msg {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #166534;
+  background: var(--green-light);
+  border: 1px solid #9bc9ad;
+  color: #1e5c3a;
   padding: 14px;
   border-radius: 10px;
   font-size: 14px;
@@ -139,9 +196,9 @@ label {
 }
 
 .error-msg {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #991b1b;
+  background: var(--red-light);
+  border: 1px solid #e0a89f;
+  color: #7c241a;
   padding: 12px;
   border-radius: 10px;
   font-size: 13px;
@@ -170,9 +227,10 @@ label {
 
 /* ─── GREETING ─── */
 .greeting {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 21px;
+  font-weight: 800;
   margin-bottom: 16px;
+  color: var(--gray-dark);
 }
 
 /* ─── CARDS ─── */
@@ -181,7 +239,8 @@ label {
   border-radius: 14px;
   padding: 20px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 10px rgba(27,58,107,0.07);
+  transition: box-shadow 0.2s;
 }
 
 .card.center { text-align: center; }
@@ -198,21 +257,22 @@ label {
 .loan-amount {
   font-size: 32px;
   font-weight: 800;
-  color: #4f46e5;
+  color: var(--navy);
   margin-bottom: 12px;
 }
 
 .progress-wrap {
-  background: #e5e7eb;
+  background: var(--gray-bg);
   border-radius: 99px;
-  height: 8px;
+  height: 10px;
   margin-bottom: 10px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
 }
 
 .progress-bar {
   height: 100%;
-  background: #4f46e5;
+  background: linear-gradient(90deg, var(--green), #3fa56d);
   border-radius: 99px;
   transition: width 0.5s;
 }
@@ -239,13 +299,13 @@ label {
   border-radius: 12px;
   padding: 14px 10px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(27,58,107,0.06);
 }
 
 .stat-val {
   font-size: 22px;
   font-weight: 800;
-  color: #4f46e5;
+  color: var(--navy);
 }
 
 .stat-label {
@@ -274,12 +334,13 @@ label {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .nav-btn:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 2px 8px rgba(79,70,229,0.1);
+  border-color: var(--navy);
+  box-shadow: 0 4px 14px rgba(27,58,107,0.12);
+  transform: translateY(-2px);
 }
 
 .nav-icon { font-size: 24px; }
@@ -299,7 +360,7 @@ label {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--gray-bg);
   color: #6b7280;
   font-size: 13px;
   font-weight: 700;
@@ -310,12 +371,12 @@ label {
 }
 
 .step.active {
-  background: #4f46e5;
+  background: var(--navy);
   color: white;
 }
 
 .step.done {
-  background: #10b981;
+  background: var(--green);
   color: white;
 }
 
@@ -329,6 +390,7 @@ label {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: var(--gray-dark);
 }
 
 /* ─── TOGGLE GROUP ─── */
@@ -351,14 +413,14 @@ label {
 }
 
 .toggle-btn.active {
-  border-color: #4f46e5;
-  background: #eef2ff;
-  color: #4f46e5;
+  border-color: var(--navy);
+  background: #eaf0f9;
+  color: var(--navy);
 }
 
 /* ─── CALC BOX ─── */
 .calc-box {
-  background: #f8fafc;
+  background: var(--gray-bg);
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 16px;
@@ -371,7 +433,7 @@ label {
   font-size: 14px;
   padding: 5px 0;
   color: #374151;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #e9ecf3;
 }
 
 .calc-row:last-child { border-bottom: none; }
@@ -379,7 +441,7 @@ label {
 .calc-row.total {
   font-weight: 700;
   font-size: 15px;
-  color: #4f46e5;
+  color: var(--navy);
   padding-top: 10px;
   margin-top: 4px;
   border-top: 2px solid #e5e7eb;
@@ -397,9 +459,9 @@ label {
 }
 
 .doc-item.uploaded {
-  border-color: #10b981;
+  border-color: var(--green);
   border-style: solid;
-  background: #f0fdf4;
+  background: var(--green-light);
 }
 
 .doc-title {
@@ -416,8 +478,8 @@ label {
 
 .doc-upload-btn {
   padding: 8px 14px;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #eaf0f9;
+  color: var(--navy);
   border: none;
   border-radius: 8px;
   font-size: 13px;
@@ -427,14 +489,14 @@ label {
 
 .doc-status {
   font-size: 12px;
-  color: #10b981;
+  color: var(--green);
   font-weight: 600;
   margin-top: 6px;
 }
 
 /* ─── REVIEW BOX ─── */
 .review-box {
-  background: #f8fafc;
+  background: var(--gray-bg);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -451,7 +513,7 @@ label {
 .review-row:last-child { border-bottom: none; }
 
 .review-row span:first-child { color: #6b7280; }
-.review-row span:last-child { font-weight: 600; }
+.review-row span:last-child { font-weight: 600; color: var(--gray-dark); }
 
 /* ─── SIGNATURE ─── */
 .signature-section {
@@ -486,7 +548,7 @@ label {
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(27,58,107,0.06);
 }
 
 .loan-card-top {
@@ -499,7 +561,7 @@ label {
 .loan-card-amount {
   font-size: 20px;
   font-weight: 800;
-  color: #1a1a2e;
+  color: var(--gray-dark);
 }
 
 .status-badge {
@@ -510,13 +572,15 @@ label {
   text-transform: uppercase;
 }
 
-.badge-pending { background: #fef3c7; color: #92400e; }
-.badge-approved { background: #d1fae5; color: #065f46; }
-.badge-active { background: #dbeafe; color: #1e40af; }
-.badge-rejected { background: #fee2e2; color: #991b1b; }
-.badge-completed { background: #f3f4f6; color: #374151; }
-.badge-disbursed { background: #ede9fe; color: #5b21b6; }
-.badge-review { background: #fef3c7; color: #92400e; }
+/* ─── SEMANTIC STATUS BADGES ─── */
+.badge-pending, .status-badge.badge-pending { background: var(--gold); color: var(--navy); }
+.badge-approved, .status-badge.badge-approved { background: var(--green); color: #fff; }
+.badge-active, .status-badge.badge-active { background: var(--navy); color: #fff; }
+.badge-rejected, .status-badge.badge-rejected { background: var(--red); color: #fff; }
+.badge-completed, .status-badge.badge-completed { background: #e5e7eb; color: var(--gray-dark); }
+.badge-disbursed, .status-badge.badge-disbursed { background: var(--navy-light); color: #fff; }
+.badge-review, .status-badge.badge-review { background: var(--gold-light); color: #7a5c12; }
+.badge-overdue, .status-badge.badge-overdue { background: var(--red); color: #fff; }
 
 /* ─── REPAYMENT TABLE ─── */
 .repayment-item {
@@ -527,15 +591,15 @@ label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 4px rgba(27,58,107,0.05);
 }
 
 .rep-date { font-size: 13px; color: #6b7280; }
-.rep-amount { font-size: 16px; font-weight: 700; }
+.rep-amount { font-size: 16px; font-weight: 700; color: var(--gray-dark); }
 .rep-status { font-size: 12px; font-weight: 600; }
-.rep-paid { color: #10b981; }
-.rep-pending { color: #f59e0b; }
-.rep-overdue { color: #ef4444; }
+.rep-paid { color: var(--green); }
+.rep-pending { color: #946a14; }
+.rep-overdue { color: var(--red); }
 
 /* ─── LOADING ─── */
 .loading {
@@ -550,7 +614,7 @@ label {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
-  background: #f3f4f6;
+  background: var(--gray-bg);
   border-radius: 10px;
   padding: 4px;
   margin-bottom: 20px;
@@ -570,6 +634,14 @@ label {
 
 .auth-tab.active {
   background: white;
-  color: #4f46e5;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  color: var(--navy);
+  box-shadow: 0 1px 4px rgba(27,58,107,0.12);
+}
+
+/* ─── FOOTER ─── */
+.site-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  padding: 24px 16px 32px;
 }

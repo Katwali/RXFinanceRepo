@@ -12,7 +12,8 @@
   <!-- ─── LOGIN SCREEN ─── -->
 <div id="view-login" class="view active">
   <div class="auth-card">
-    <div class="logo">RX<span>Finance</span></div>
+    <img src="Logo-02.png" alt="RX Finance" class="logo-img" />
+    <p class="hero-tagline">Fast. Trusted. Namibian.</p>
     <h2>Client Portal</h2>
     <p class="subtitle">Sign in or create your account</p>
 
@@ -39,13 +40,19 @@
 
     <div id="auth-error" class="error-msg hidden"></div>
     <div id="auth-success" class="success-msg hidden"></div>
+
+    <div class="trust-badges">
+      <span class="trust-badge">🔒 256-bit Encrypted</span>
+      <span class="trust-badge">✅ Registered Lender</span>
+      <span class="trust-badge">⚡ 24hr Approval</span>
+    </div>
   </div>
 </div>
 
   <!-- ─── DASHBOARD ─── -->
   <div id="view-dashboard" class="view hidden">
     <div class="topbar">
-      <div class="logo-sm">RX<span>Finance</span></div>
+      <img src="Logo-02.png" alt="RX Finance" class="logo-img logo-img-sm" />
       <button onclick="signOut()" class="btn-ghost-sm">Sign Out</button>
     </div>
 
@@ -260,6 +267,8 @@
       </div>
     </div>
   </div>
+
+  <footer class="site-footer">RX Finance © 2025 | Licensed Micro Lender | Windhoek, Namibia</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
