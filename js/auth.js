@@ -58,47 +58,54 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── SIGN UP ───
-  window.signUp = async function() {
-    const full_name = document.getElementById('signup-name').value.trim();
-    const email = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-    const phone = document.getElementById('signup-phone').value.trim();
+ window.signUp = async function() {
+  const full_name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const phone = document.getElementById('signup-phone').value.trim();
 
-    if (!full_name) return showAuthError('Please enter your full name');
-    if (!email) return showAuthError('Please enter your email address');
-    if (!password || password.length < 6) return showAuthError('Password must be at least 6 characters');
+  if (!full_name) return showAuthError('Please enter your full name');
+  if (!email) return showAuthError('Please enter your email address');
+  if (!password || password.length < 6) return showAuthError('Password must be at least 6 characters');
 
-    const btn = document.querySelector('#form-signup .btn-primary');
-    btn.textContent = 'Creating account...';
-    btn.disabled = true;
+  const btn = document.querySelector('#form-signup .btn-primary');
+  btn.textContent = 'Creating account...';
+  btn.disabled = true;
 
+  try {
+    // Step 1: Sign up with Supabase Auth
     const { data, error } = await _supabase.auth.signUp({
       email,
-      password,
-      options: {
-        data: { full_name, phone }
-      }
+      password
     });
 
-    if (error) {
-      showAuthError(error.message);
-      btn.textContent = 'Create Account';
-      btn.disabled = false;
-      return;
-    }
+    if (error) throw error;
+    if (!data.user) throw new Error('Account creation failed. Please try again.');
 
-    if (data.user && !data.session) {
-      // Email confirmation required
-      showAuthSuccess('✅ Account created! Check your email to confirm your account, then sign in.');
-      switchTab('signin');
-      btn.textContent = 'Create Account';
-      btn.disabled = false;
-      return;
-    }
+    // Step 2: Manually create profile (bypasses broken trigger)
+    await _supabase.from('profiles').upsert({
+      id: data.user.id,
+      full_name,
+      phone
+    });
 
-    // Auto signed in (email confirmation off)
-    showAuthSuccess('✅ Account created! Welcome to RX Finance.');
+    // Step 3: Sign in immediately
+    const { data: signInData, error: signInError } = await _supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (signInError) throw signInError;
+
+    showAuthSuccess('✅ Welcome to RX Finance, ' + full_name + '!');
+
+  } catch (err) {
+    console.log('Signup error:', err);
+    showAuthError(err.message || 'Signup failed. Please try again.');
+    btn.textContent = 'Create Account';
+    btn.disabled = false;
   }
+}
 
   // ─── FORGOT PASSWORD ───
   window.sendReset = async function() {
