@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RX Finance — Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ─── LOGIN ─── -->
+  <div id="view-login" class="view active">
+    <div class="auth-card">
+      <div class="logo">RX<span>Finance</span></div>
+      <h2>Admin Portal</h2>
+      <p class="subtitle">Staff access only</p>
+      <input type="email" id="admin-email" placeholder="admin@email.com" />
+      <input type="password" id="admin-password" placeholder="Password" />
+      <button onclick="adminSignIn()" class="btn-primary">Sign In</button>
+      <div id="auth-error" class="error-msg hidden"></div>
+    </div>
+  </div>
+
+  <!-- ─── PIPELINE ─── -->
+  <div id="view-pipeline" class="view hidden">
+    <div class="topbar">
+      <div class="logo-sm">RX<span>Finance</span> Admin</div>
+      <div class="topbar-right">
+        <span id="admin-email-label" class="admin-label"></span>
+        <button onclick="adminSignOut()" class="btn-ghost-sm">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-pill" onclick="filterApps('all')">
+        <span class="stat-num" id="stat-all">0</span>
+        <span class="stat-name">All</span>
+      </div>
+      <div class="stat-pill new" onclick="filterApps('pending')">
+        <span class="stat-num" id="stat-pending">0</span>
+        <span class="stat-name">Pending</span>
+      </div>
+      <div class="stat-pill review" onclick="filterApps('review')">
+        <span class="stat-num" id="stat-review">0</span>
+        <span class="stat-name">In Review</span>
+      </div>
+      <div class="stat-pill approved" onclick="filterApps('approved')">
+        <span class="stat-num" id="stat-approved">0</span>
+        <span class="stat-name">Approved</span>
+      </div>
+      <div class="stat-pill active" onclick="filterApps('active')">
+        <span class="stat-num" id="stat-active">0</span>
+        <span class="stat-name">Active</span>
+      </div>
+      <div class="stat-pill overdue" onclick="filterApps('overdue')">
+        <span class="stat-num" id="stat-overdue">0</span>
+        <span class="stat-name">Overdue</span>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="🔍 Search by name or email..." oninput="renderPipeline()" />
+    </div>
+
+    <!-- Applications table -->
+    <div class="table-wrap">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Amount</th>
+            <th>Term</th>
+            <th>Purpose</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="pipeline-body">
+          <tr><td colspan="7" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── DETAIL VIEW ─── -->
+  <div id="view-detail" class="view hidden">
+    <div class="topbar">
+      <button onclick="showAdminView('pipeline')" class="btn-ghost-sm">← Back</button>
+      <div class="logo-sm">Application Detail</div>
+      <div></div>
+    </div>
+
+    <div class="detail-container">
+
+      <!-- Client info -->
+      <div class="detail-card">
+        <div class="detail-card-title">Client Information</div>
+        <div class="detail-grid">
+          <div class="detail-row"><span>Name</span><span id="d-name">—</span></div>
+          <div class="detail-row"><span>Email</span><span id="d-email">—</span></div>
+          <div class="detail-row"><span>Phone</span><span id="d-phone">—</span></div>
+          <div class="detail-row"><span>ID Number</span><span id="d-idnum">—</span></div>
+        </div>
+      </div>
+
+      <!-- Loan info -->
+      <div class="detail-card">
+        <div class="detail-card-title">Loan Details</div>
+        <div class="detail-grid">
+          <div class="detail-row"><span>Amount</span><span id="d-amount">—</span></div>
+          <div class="detail-row"><span>Term</span><span id="d-term">—</span></div>
+          <div class="detail-row"><span>Interest (30%)</span><span id="d-interest">—</span></div>
+          <div class="detail-row"><span>Total Repayable</span><span id="d-total">—</span></div>
+          <div class="detail-row"><span>Monthly Installment</span><span id="d-installment">—</span></div>
+          <div class="detail-row"><span>Purpose</span><span id="d-purpose">—</span></div>
+          <div class="detail-row"><span>Applied</span><span id="d-date">—</span></div>
+          <div class="detail-row"><span>Status</span><span id="d-status">—</span></div>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div class="detail-card">
+        <div class="detail-card-title">KYC Documents</div>
+        <div id="d-docs">No documents uploaded</div>
+      </div>
+
+      <!-- Admin notes -->
+      <div class="detail-card">
+        <div class="detail-card-title">Admin Notes</div>
+        <textarea id="admin-notes" placeholder="Add notes about this application..." rows="3"></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="detail-card">
+        <div class="detail-card-title">Actions</div>
+        <div class="action-buttons" id="action-buttons">
+          <!-- Filled dynamically based on status -->
+        </div>
+        <div id="disburse-section" class="hidden">
+          <input type="text" id="disburse-ref" placeholder="Transaction reference (e.g. FNB123456)" />
+          <button onclick="markDisbursed()" class="btn-primary">Confirm Disbursement</button>
+        </div>
+        <div id="action-msg" class="hidden"></div>
+      </div>
+
+      <!-- Repayment schedule -->
+      <div class="detail-card" id="repayment-card" style="display:none">
+        <div class="detail-card-title">Repayment Schedule</div>
+        <div id="d-repayments"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/admin-ui.js"></script>
+</body>
+</html>
